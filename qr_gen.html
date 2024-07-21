@@ -101,7 +101,7 @@
             let tmr = setInterval(() => {
                 let chunk = chunks.shift();
                 if (chunkIndx > 2) {
-                    $("#text").value = doneChunks + chunk + chunks.join("");
+                    //$("#text").value = doneChunks + chunk + chunks.join("");
                     $("#text").focus();
                     $("#text").scrollTop = doneChunks.length;
                     $("#text").setSelectionRange(doneChunks.length, doneChunks.length + chunk.length);
