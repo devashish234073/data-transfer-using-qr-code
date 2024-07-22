@@ -90,7 +90,7 @@
             var text = $("#text").value;
             let originalText = text;
             let chunksOrig = splitIntoChunks(text);
-            let chunks = ["Type:Text", "DELAY:" + DELAY, "Len:" + chunksOrig.length, ...chunksOrig];
+            let chunks = ["Type::Text", "DELAY::" + DELAY, "LAST::EOF","Len::" + chunksOrig.length, ...chunksOrig, "LAST::EOF"];
             console.log("chunks", chunks);
             let chunkIndx = 0;
             let doneChunks = "";
