@@ -75,7 +75,6 @@
                     alert("Last chunk received. Total " + scannedData["dataChunks"].length + " received out of " + scannedData["len"]);
                     stopScanning();
                 } else {
-                    $("#result").value = $("#result").value + decodedText;
                     let date = new Date();
                     if (scannedData["dataChunks"].length == 0) {
                         scannedData["dataChunks"].push(decodedText);
@@ -86,8 +85,9 @@
                             same = true;
                         }
                         console.log("retrived " + decodedText + " after " + delay + " ms. Same: " + same);
-                        //if(!same || delay>=scannedData["delayLess"]) {//ideal scenario to prevent reading same chunk twice
-                        if (!same) {//since ideal scenario is not working hence adding this
+                        if(!same || delay>=scannedData["delayLess"]) {//ideal scenario to prevent reading same chunk twice
+                        //if (!same) {//if ideal scenario is not working use this
+                            $("#result").value = $("#result").value + decodedText;
                             scannedData["dataChunks"].push(decodedText);
                         }
                     }
