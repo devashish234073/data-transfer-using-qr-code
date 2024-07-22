@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>QR Code Scanner</title>
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <style>
+        #reader {
+            width: 500px;
+            height: 500px;
+            margin: auto;
+        }
+
+        table {
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        button {
+            width: 100%;
+            height: 30px;
+            border: none;
+            background-color: green;
+            color: white;
+        }
+
+        button:disabled {
+            background-color: gray;
+            color: darkgray;
+        }
+
+        #result {
+            width: 99%;
+            height: 200px;
+        }
+    </style>
+</head>
+
+<body>
+    <table>
+        <tr>
+            <td>
+                <button onclick="startScanning()" id="strtBtn">Start Scanning</button>
+            </td>
+            <td>
+                <button onclick="stopScanning()" id="stopBtn">Stop Scanning</button>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <textarea id="result"></textarea>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2">
+                <div id="reader"></div>
+            </td>
+        </tr>
+    </table>
+    <script>
+        var html5QrCode;
+        let strtBtn = $("#strtBtn");
+        let stopBtn = $("#stopBtn");
+
+        function $(selector) {
+            return document.querySelector(selector);
+        }
+
+        let scannedData = {"data":"","dataChunks":[]};
+        let lastScanTime = -1;
+
+        function showScannedResult(decodedText, decodedResult) {
+            if(scannedData["type"] && scannedData["len"] && scannedData["delay"]){
+                $("#result").value = $("#result").value + decodedText;
+                let date = new Date();
+                if(scannedData["dataChunks"].length==0) {
+                    scannedData["dataChunks"].push(decodedText);
+                } else {
+                    let delay = date.getTime()-lastScanTime;
+                    let same = false;
+                    if(scannedData["dataChunks"][scannedData["dataChunks"].length-1]==decodedText) {
+                        same = true;
+                    }
+                    console.log("retrived "+decodedText+" after "+delay+" ms. Same: "+same);
+                    if(!same || delay>=scannedData["delayLess"]) {//prevent reading same chunk twice
+                        scannedData["dataChunks"].push(decodedText);
+                    }
+                }
+                lastScanTime = date.getTime();
+            } else if(decodedText.startsWith("Type:")) {
+                console.log(scannedData);
+                scannedData["type"] = decodedText.replace("Type:","");
+            } else if(decodedText.startsWith("Len:")) {
+                console.log(scannedData);
+                scannedData["len"] = parseInt(decodedText.replace("Len:",""));
+            } else if(decodedText.startsWith("DELAY:")) {
+                console.log(scannedData);
+                scannedData["delay"] = parseInt(decodedText.replace("DELAY:",""));
+                scannedData["delayLess"] = parseInt(0.9*scannedData["delay"]);
+            }
+        };
+
+        stopBtn.setAttribute("disabled",true);
+        function startScanning() {
+            scannedData = {"data":"","dataChunks":[]};
+            strtBtn.setAttribute("disabled",true);
+            stopBtn.removeAttribute("disabled");
+            html5QrCode = new Html5Qrcode("reader");
+            html5QrCode.start({ facingMode: "environment" }, {
+                fps: 3,
+                qrbox: 350
+            }, showScannedResult)
+                .catch(err => {
+                    console.log(`Error starting QR code scanning: ${err}`);
+                });
+        }
+
+        function stopScanning() {
+            stopBtn.setAttribute("disabled",true);
+            strtBtn.removeAttribute("disabled");
+            if (html5QrCode) {
+                html5QrCode.stop().then(ignore => {
+                    console.log('QR Code scanning stopped.');
+                }).catch(err => {
+                    console.log(`Error stopping QR code scanning: ${err}`);
+                });
+            }
+        }
+    </script>
+</body>
+
+</html>
